@@ -1,0 +1,17 @@
+[spritesheet]
+source=spritesheet/entities.png
+
+[sprite]
+id=0
+name=abyss
+location=0,0,32,32
+
+[sprite]
+id=1
+name=playerSpawn
+location=32,0,32,32
+
+[sprite]
+id=2
+name=exit
+location=64,0,32,32
