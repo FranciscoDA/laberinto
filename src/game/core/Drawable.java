@@ -1,6 +1,8 @@
-package state.game;
+package game.core;
 
 import java.awt.Graphics2D;
+
+import state.GameState;
 
 public interface Drawable {
 	/**

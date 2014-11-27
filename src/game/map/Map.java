@@ -1,11 +1,12 @@
-package state.game.map;
+package game.map;
 
+
+import game.core.Box;
+import game.core.Direction;
 
 import java.awt.Graphics2D;
 
-import state.game.GameState;
-import core.Box;
-import core.Direction;
+import state.GameState;
 
 /**
  * La clase Map contiene la informacion de los cuadrados del mapa
@@ -15,7 +16,7 @@ import core.Direction;
  * @author Francisco Altoe
  *
  */
-public class Map implements state.game.Drawable {
+public class Map implements game.core.Drawable {
 
 	private int width;
 	private int height;
@@ -23,37 +24,32 @@ public class Map implements state.game.Drawable {
 	private Tileset tileset;
 	private ObjectManager objects;
 	private boolean[] calculatedFOV;
-	private byte[] floorTiles;
-	private byte[] wallTiles;
+	private Tile[] floorTiles;
+	private Tile[] wallTiles;
 
-	public Map ()
+	Map (int width, int height, Tileset tileset)
 	{
-		setDimensions (0,0);
-		objects = new ObjectManager();
-		tileset = null;
-	}
-	
-	public void setDimensions (int nw, int nh)
-	{
-		width = nw;
-		height = nh;
-		floorTiles = new byte[nw*nh];
-		wallTiles = new byte[nw*nh];
-		calculatedFOV = new boolean[nw*nh];
-		for (int i = 0; i < nw*nh; i++)
+		this.width = width;
+		this.height = height;
+		floorTiles = new Tile[width*height];
+		wallTiles = new Tile[width*height];
+		calculatedFOV = new boolean[width*height];
+		for (int i = 0; i < width*height; i++)
 		{
-			floorTiles[i] = 0;
-			wallTiles[i] = 0;
+			floorTiles[i] = null;
+			wallTiles[i] = null;
 			calculatedFOV[i] = false;
 		}
+		objects = new ObjectManager();
+		this.tileset = tileset;
 	}
+
 	public ObjectManager getObjects() { return objects; }
-	public void setTileSet (Tileset ts) { tileset = ts; }
-	public Tileset getTileSet () { return tileset; }
+	//public Tileset getTileSet () { return tileset; }
 	public int getWidth() { return width; }
 	public int getHeight() { return height; }
-	public int getTileWidth() { return getTileSet().getTileWidth(); }
-	public int getTileHeight() { return getTileSet().getTileHeight(); }
+	public int getTileWidth() { return tileset.getTileWidth(); }
+	public int getTileHeight() { return tileset.getTileHeight(); }
 	public int xPixelsToTiles(int pixels) { return pixels / getTileWidth(); }
 	public int yPixelsToTiles(int pixels) { return pixels / getTileHeight(); }
 	public boolean inBounds (int x, int y) { return x>=0 && x<getWidth() && y>=0 && y<getHeight(); }
@@ -61,23 +57,23 @@ public class Map implements state.game.Drawable {
 	public Tile getTile(int x, int y)
 	{
 		int idx = y * getWidth() + x;
-		if (wallTiles[idx] != 0)
-			return tileset.getTile((int)wallTiles[idx]);
-		return tileset.getTile((int)floorTiles[idx]);
+		if (wallTiles[idx] != null)
+			return wallTiles[idx];
+		return floorTiles[idx];
 	}
 	public boolean isWall(int x, int y)
 	{
-		return wallTiles[y * getWidth() + x] != 0;
+		return wallTiles[y * getWidth() + x] != null;
 	}
 	public boolean isFloor(int x, int y)
 	{
-		return (wallTiles[y * getWidth() + x] == 0 && floorTiles[y*getWidth()+x] != 0);
+		return (wallTiles[y * getWidth() + x] == null && floorTiles[y*getWidth()+x] != null);
 	}
-	public void setWall (int x, int y, byte t)
+	public void setWall (int x, int y, Tile t)
 	{
 		wallTiles[y * getWidth() + x] = t;
 	}
-	public void setFloor (int x, int y, byte t)
+	public void setFloor (int x, int y, Tile t)
 	{
 		floorTiles[y * getWidth() + x] = t;
 	}

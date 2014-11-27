@@ -1,10 +1,11 @@
-package state.game.map;
+package game.map;
+
+import game.core.Drawable;
 
 import java.awt.Graphics2D;
 import java.util.HashMap;
 
-import state.game.Drawable;
-import state.game.GameState;
+import state.GameState;
 
 public class EntityPlayerSpawn extends Entity implements Drawable {
 	private int tileX;
@@ -34,8 +35,8 @@ public class EntityPlayerSpawn extends Entity implements Drawable {
 
 	@Override
 	public void onGameStart(GameState gs) {
-		int tw = gs.getMap().getTileSet().getTileWidth();
-		int th = gs.getMap().getTileSet().getTileHeight();
+		int tw = gs.getMap().getTileWidth();
+		int th = gs.getMap().getTileHeight();
 		gs.getMap().getObjects().add(
 			new Player(
 				tileX * tw + tw / 2,
@@ -51,11 +52,13 @@ public class EntityPlayerSpawn extends Entity implements Drawable {
 	
 	@Override
 	public void draw(GameState gs, Graphics2D g2d) {
-		g2d.drawImage(spritesheet.getSprite("playerSpawn"),
-			tileX * gs.getMap().getTileWidth() - gs.getCamera().getWest(),
-			tileY * gs.getMap().getTileHeight() - gs.getCamera().getNorth(),
-			null
-		);
-		
+		if (gs.getMap().isInFOV(tileX, tileY))
+		{
+			g2d.drawImage(spritesheet.getSprite("playerSpawn"),
+					tileX * gs.getMap().getTileWidth() - gs.getCamera().getWest(),
+					tileY * gs.getMap().getTileHeight() - gs.getCamera().getNorth(),
+					null
+			);
+		}
 	}
 }

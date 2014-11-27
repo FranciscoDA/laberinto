@@ -1,12 +1,20 @@
-package state.game.map;
+package game.map;
+
+import game.core.Box;
+import game.core.Spritesheet;
 
 import java.util.HashMap;
 
-import core.Box;
-import core.Spritesheet;
 
-import state.game.GameState;
+import state.GameState;
 
+/**
+ * La clase Entity representa objetos ya definidos en el archivo del mapa
+ * además, soportan un mecanismo de name/triggers aunque no se usa 
+ * 
+ * @author Francisco Altoe
+ *
+ */
 public abstract class Entity extends MapObject{
 	
 	static Spritesheet spritesheet;

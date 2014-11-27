@@ -1,10 +1,12 @@
 
 
+import game.core.GamePanel;
+
 import java.awt.event.WindowEvent;
+import java.nio.file.Paths;
 
 import javax.swing.JFrame;
 
-import core.GamePanel;
 
 
 
@@ -15,7 +17,7 @@ public class Main {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		GamePanel gamepanel = new GamePanel();
-		gamepanel.pushGameState(new state.game.GameState());
+		gamepanel.pushGameState(new state.GameState(Paths.get("map/map01.txt")));
 
 		/*
 		 * es importante agregar el gamestate al panel antes de agregar el panel al jframe

@@ -1,10 +1,18 @@
-package state.game.map;
+package game.map;
 
-import state.game.GameState;
-import state.game.Moveable;
-import core.Box;
-import core.Point;
+import game.core.Box;
+import game.core.Moveable;
+import game.core.Point;
+import state.GameState;
 
+/**
+ * La clase Camera representa lo que el jugador deberia ver dentro del juego,
+ * por lo tanto, todos los objetos que se dibujen en pantalla deberian tener
+ * en cuenta la posicion de la camara.
+ * 
+ * 
+ * @author Francisco Altoe
+ */
 public class Camera implements Moveable {
 	private Box box;
 	private Point parent;

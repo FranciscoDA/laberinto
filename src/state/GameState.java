@@ -1,18 +1,26 @@
-package state.game;
+package state;
+
+import game.core.GamePanel;
+import game.core.Point;
+import game.map.Camera;
+import game.map.Map;
+import game.map.MapLoader;
+import game.map.Player;
 
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
+import java.nio.file.Path;
 
 import javax.swing.JOptionPane;
 
-import state.game.map.Camera;
-import state.game.map.Map;
-import state.game.map.MapLoader;
-import state.game.map.Player;
-import core.GamePanel;
-import core.Point;
 
 public class GameState extends state.State {
+	Path mapPath;
+	public GameState(Path path)
+	{
+		this.mapPath = path;
+	}
+	
 	@Override
 	public void init(GamePanel gp) {
 		camera = new Camera(
@@ -21,16 +29,13 @@ public class GameState extends state.State {
 				gp.getScreenWidth(),
 				gp.getScreenHeight()
 			);
-		map = new Map();
 		try
 		{
-			MapLoader.loadMap(map, MapLoader.MapType.FLARE, "map01.txt");
+			map = MapLoader.loadMap(map, MapLoader.MapType.FLARE, mapPath);
 		}
 		catch (Exception e)
 		{
-			/* si hubo un error al cargar el mapa, informamos al usuario del archivo
-			 * que no se pudo encontrar y el directorio en el cual se lo esta buscando
-			 */
+			// si hubo un error al cargar el mapa, informamos que no se pudo encontrar
 			JOptionPane.showMessageDialog(null, e.toString(), "ERROR", JOptionPane.ERROR_MESSAGE);
 		}
 		map.getObjects().startGame(this);
@@ -69,14 +74,6 @@ public class GameState extends state.State {
 
 	@Override
 	public void keyPressed(KeyEvent arg0) {
-		/*if (arg0.getKeyCode() == KeyEvent.VK_UP)
-			camera.setVerticalVelocity(-2.0f);
-		else if (arg0.getKeyCode() == KeyEvent.VK_RIGHT)
-			camera.setHorizontalVelocity(2.0f);
-		else if (arg0.getKeyCode() == KeyEvent.VK_DOWN)
-			camera.setVerticalVelocity(2.0f);
-		else if (arg0.getKeyCode() == KeyEvent.VK_LEFT)
-			camera.setHorizontalVelocity(-2.0f);*/
 		Player player = getMap().getObjects().getPlayer();
 		if (player != null)
 			player.keyPressed(arg0);
@@ -84,15 +81,6 @@ public class GameState extends state.State {
 
 	@Override
 	public void keyReleased(KeyEvent arg0) {
-		/*if (arg0.getKeyCode() == KeyEvent.VK_UP)
-			camera.setVerticalVelocity(0.0f);
-		else if (arg0.getKeyCode() == KeyEvent.VK_RIGHT)
-			camera.setHorizontalVelocity(0.0f);
-		else if (arg0.getKeyCode() == KeyEvent.VK_DOWN)
-			camera.setVerticalVelocity(0.0f);
-		else if (arg0.getKeyCode() == KeyEvent.VK_LEFT)
-			camera.setHorizontalVelocity(0.0f);
-		*/
 		Player player = getMap().getObjects().getPlayer();
 		if (player != null)
 			player.keyReleased(arg0);

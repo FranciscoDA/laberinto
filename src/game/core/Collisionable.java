@@ -1,6 +1,6 @@
-package state.game;
+package game.core;
 
-import core.Shape;
+import state.GameState;
 
 public interface Collisionable {
 	/**

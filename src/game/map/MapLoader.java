@@ -1,53 +1,68 @@
-package state.game.map;
+package game.map;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 
+/**
+ * Clase para cargar mapas en distintos formatos.
+ * Por el momento solo soporta un unico formato que es el
+ * formato flare map del editor Tiled (http://www.mapeditor.org)
+ * 
+ * @author Francisco Altoe
+ *
+ */
 public abstract class MapLoader {
 	static {
 		EntityFactory.getInstance().registerEntityType("playerSpawn", new EntityPlayerSpawn());
 		EntityFactory.getInstance().registerEntityType("abyss", new EntityAbyss());
+		EntityFactory.getInstance().registerEntityType("playerExit", new EntityPlayerExit());
 	}
 	public enum MapType
 	{
 		FLARE/*, TMX*/
 	}
-	public static void loadMap (Map map, MapType type, String fileName) throws Exception
+	public static Map loadMap (Map map, MapType type, Path mapPath) throws Exception
 	{
 		if (type == MapType.FLARE)
 		{
-			loadFlareMap (map, fileName);
+			return loadFlareMap (mapPath);
 		}
+		return null;
 	}
 	
 	/**
 	 * Carga un mapa en formato flare map exportado por el editor tiled
 	 * (http://mapeditor.org/)
 	 * 
-	 * @param fileName Nombre del archivo a cargar
+	 * @param mapPath Nombre del archivo a cargar
 	 * @throws Exception 
 	 */
-	private static void loadFlareMap (Map map, String fileName) throws Exception
+	private static Map loadFlareMap (Path mapPath) throws Exception
 	{
+		Map map = null;
+		Tileset tileset = null;
+		int width = 0;
+		int height = 0;
 		//iremos leyendo el archivo de a tags encerrados entre corchetes
-		BufferedReader br = new BufferedReader(new FileReader(fileName));
+		BufferedReader br = new BufferedReader(new FileReader(mapPath.toFile()));
 		for (String line = br.readLine(); line != null; line = br.readLine())
 		{
 			// del tag header solo nos interesa el alto y ancho del mapa
 			if (line.equals("[header]"))
 			{
-				int w = 0;
-				int h = 0;
 				for (String attribute = br.readLine(); !attribute.isEmpty(); attribute = br.readLine())
 				{
 					String[] keyval = attribute.split("=");
 					if (keyval[0].equals("width"))
-						w = Integer.parseInt(keyval[1]);
+						width = Integer.parseInt(keyval[1]);
 					else if (keyval[0].equals("height"))
-						h = Integer.parseInt(keyval[1]);
+						height = Integer.parseInt(keyval[1]);
 				}
-				map.setDimensions(w, h);
+				if (tileset != null)
+					map = new Map (width, height, tileset);
 			}
 			// del tag tilesets solo nos interesa un solo tileset
 			else if (line.equals("[tilesets]"))
@@ -58,13 +73,13 @@ public abstract class MapLoader {
 				for (String attribute = br.readLine(); !attribute.isEmpty(); attribute = br.readLine())
 				{
 					String[] opts = attribute.split(",");
-					path = opts[0].split("=")[1];
+					path = mapPath.getParent().resolve(Paths.get(opts[0].split("=")[1])).toString();
 					tw = Integer.parseInt(opts[1]);
 					th = Integer.parseInt(opts[2]);
 				}
-				Tileset ts = new Tileset ();
-				ts.load(path, tw, th);
-				map.setTileSet(ts);
+				tileset = new Tileset (path, tw, th);
+				if (map == null)
+					map = new Map (width, height, tileset);
 			}
 			// del tag layer diferenciamos la capa del piso y la de las paredes
 			else if (line.equals("[layer]"))
@@ -81,10 +96,11 @@ public abstract class MapLoader {
 					String[] tiledata = br.readLine().split(",");
 					for (int x = 0; x < map.getWidth(); x++)
 					{ 
+						Tile t = tileset.getTile(Integer.parseInt(tiledata[x]));
 						if (type.equals("wall"))
-							map.setWall(x, y, Byte.parseByte(tiledata[x]));
+							map.setWall(x, y, t);
 						else if (type.equals("floor"))
-							map.setFloor(x, y, Byte.parseByte(tiledata[x]));
+							map.setFloor(x, y, t);
 					}
 				}
 			}
@@ -101,5 +117,7 @@ public abstract class MapLoader {
 			}
 		}
 		br.close();
+
+		return map;
 	}
 }

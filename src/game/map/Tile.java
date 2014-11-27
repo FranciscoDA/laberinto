@@ -1,4 +1,4 @@
-package state.game.map;
+package game.map;
 
 public class Tile {
 	public Tile (int gid, int sX, int sY)

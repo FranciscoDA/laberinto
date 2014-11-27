@@ -1,10 +1,13 @@
-package state.game.map;
+package game.map;
 
 import java.util.HashMap;
 
 /**
  * Implementacion de una clase factory para entidades del mapa utilizando un singleton.
- * De esta forma se puede crear entidades segun su nombre sin utilizar un switch
+ * De esta forma se pueden crear entidades de clases heredadas segun su nombre sin
+ * utilizar un switch. Es decir, sin conocer las clases de antemano.
+ * (ver http://oodesign.com)
+ * 
  * @author Francisco Altoe
  *
  */

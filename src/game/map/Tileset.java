@@ -1,4 +1,4 @@
-package state.game.map;
+package game.map;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -8,12 +8,7 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 public class Tileset {
-	public Tileset ()
-	{
-		tileSheet = null;
-		set = null;
-	}
-	public void load (String path, int tileWidth, int tileHeight) throws IOException
+	public Tileset (String path, int tileWidth, int tileHeight) throws IOException
 	{
 		this.tileWidth = tileWidth;
 		this.tileHeight = tileHeight;
@@ -24,7 +19,7 @@ public class Tileset {
 		set[0] = null;
 		for (int i=1; i <= tileCount; i++)
 		{
-			set[i] = new Tile( i,
+			set[i] = new Tile(i,
 				(i-1) * tileWidth % tileSheet.getWidth(),
 				(i-1) * tileWidth / tileSheet.getWidth() * tileHeight
 			);

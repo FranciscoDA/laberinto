@@ -1,13 +1,14 @@
-package state.game.map;
+package game.map;
+
+import game.core.Box;
+import game.core.Collisionable;
+import game.core.Drawable;
+import game.core.Shape;
 
 import java.awt.Graphics2D;
 import java.util.HashMap;
 
-import state.game.Collisionable;
-import state.game.Drawable;
-import state.game.GameState;
-import core.Box;
-import core.Shape;
+import state.GameState;
 
 public class EntityAbyss extends Entity implements Collisionable, Drawable {
 	private Box box;
@@ -15,16 +16,12 @@ public class EntityAbyss extends Entity implements Collisionable, Drawable {
 	public EntityAbyss()
 	{	
 	}
-	public EntityAbyss(String name, String triggers, Box shape) {
+
+	private EntityAbyss(String name, String triggers, Box box) {
 		super(name, triggers);
-		box = shape;
+		this.box = box;
 	}
 
-	/* Este tipo de entidad tiene que ocupar cuadrados enteros,
-	 * asi que corresponden hacer algunos ajustes.
-	 * El formato flare map exportado por tiled no ayuda mucho
-	 * tampoco...
-	 */
 	@Override
 	public Entity createEntity (Map map, HashMap<String, String> keyval)
 	{
@@ -59,8 +56,8 @@ public class EntityAbyss extends Entity implements Collisionable, Drawable {
 		int desty = box.getNorth() - gs.getCamera().getNorth();
 		for (int x = 0; x < box.getWidth(); x += map.getTileWidth())
 			for (int y = 0; y < box.getHeight(); y += map.getTileHeight())
-				g2d.drawImage(spritesheet.getSprite("abyss"),
-						destx+x, desty+y, null);
+				if (map.isInFOV(map.xPixelsToTiles(box.getWest()+x), map.yPixelsToTiles(box.getNorth()+y)))
+					g2d.drawImage(spritesheet.getSprite("abyss"), destx+x, desty+y, null);
 	}
 
 	@Override

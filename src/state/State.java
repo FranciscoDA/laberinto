@@ -1,9 +1,10 @@
 package state;
 
+import game.core.GamePanel;
+
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 
-import core.GamePanel;
 
 /**
  * La clase abstracta State provee una capa entre el panel del juego y
@@ -31,6 +32,7 @@ public abstract class State {
 	public abstract void pause(GamePanel gp);
 	public abstract void resume(GamePanel gp);
 	public abstract void destroy(GamePanel gp);
+	
 	public abstract void logic(GamePanel gp);
 	public abstract void paint(GamePanel gp, Graphics2D g2d);
 

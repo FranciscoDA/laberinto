@@ -1,15 +1,23 @@
-package state.game.map;
+package game.map;
+
+import game.core.Collisionable;
+import game.core.Drawable;
+import game.core.Moveable;
+import game.core.Shape;
 
 import java.awt.Graphics2D;
 import java.util.LinkedList;
 import java.util.ListIterator;
 
-import state.game.Collisionable;
-import state.game.Drawable;
-import state.game.GameState;
-import state.game.Moveable;
-import core.Shape;
+import state.GameState;
 
+/**
+ * La clase ObjectManager administra la logica y los graficos de los
+ * objetos del mapa en conjunto.
+ * 
+ * @author francisco
+ *
+ */
 public class ObjectManager {
 	public ObjectManager()
 	{
@@ -58,11 +66,13 @@ public class ObjectManager {
 					{
 						Shape oshape = ((Collisionable) o).getShape();
 						Shape pshape = ((Collisionable) p).getShape();
-						if (oshape.collides(pshape) || pshape.collides(oshape))
+						if (oshape != null && pshape != null)
 						{
-							System.out.println("collision: " + o + " , " + p);
-							((Collisionable) o).onCollision(gs, (Collisionable) p);
-							((Collisionable) p).onCollision(gs, (Collisionable) o);
+							if (oshape.collides(pshape) || pshape.collides(oshape))
+							{
+								((Collisionable) o).onCollision(gs, (Collisionable) p);
+								((Collisionable) p).onCollision(gs, (Collisionable) o);
+							}
 						}
 					}
 				}
