@@ -1,7 +1,6 @@
 package state;
 
 import game.core.GamePanel;
-import game.core.Point;
 import game.map.Camera;
 import game.map.Map;
 import game.map.MapLoader;
@@ -40,7 +39,7 @@ public class GameState extends state.State {
 		}
 		map.getObjects().startGame(this);
 		if(map.getObjects().getPlayer() != null)
-			camera.lock((Point)map.getObjects().getPlayer().getShape());
+			camera.lock(map.getObjects().getPlayer().getShape());
 	}
 
 	@Override

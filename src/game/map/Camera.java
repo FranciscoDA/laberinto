@@ -2,7 +2,7 @@ package game.map;
 
 import game.core.Box;
 import game.core.Moveable;
-import game.core.Point;
+import game.core.Shape;
 import state.GameState;
 
 /**
@@ -15,7 +15,7 @@ import state.GameState;
  */
 public class Camera implements Moveable {
 	private Box box;
-	private Point parent;
+	private Shape parent;
 	private float xv;
 	private float yv;
 	
@@ -27,7 +27,7 @@ public class Camera implements Moveable {
 		parent = null;
 	}
 
-	public void lock (Point p)
+	public void lock (Shape p)
 	{
 		parent = p;
 	}

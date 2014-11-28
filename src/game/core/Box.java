@@ -1,12 +1,15 @@
 package game.core;
 
-public class Box extends Point {
+public class Box implements Shape {
+	private int cx;
+	private int cy;
 	private int w;
 	private int h;
 
 	public Box (int x, int y, int w, int h)
 	{
-		super(x, y);
+		cx = x;
+		cy = y;
 		this.w = w;
 		this.h = h;
 	}
@@ -20,19 +23,35 @@ public class Box extends Point {
 	}
 	public int getWest()
 	{
-		return getCenterX() - getWidth() / 2;
+		return cx - getWidth() / 2;
 	}
 	public int getEast()
 	{
-		return getCenterX() + getWidth() / 2;
+		return cx + getWidth() / 2;
 	}
 	public int getNorth()
 	{
-		return getCenterY() - getHeight() / 2;
+		return cy - getHeight() / 2;
 	}
 	public int getSouth()
 	{
-		return getCenterY() + getHeight() / 2;
+		return cy + getHeight() / 2;
+	}
+	@Override
+	public int getCenterX() {
+		return cx;
+	}
+	@Override
+	public int getCenterY() {
+		return cy;
+	}
+	@Override
+	public void setCenterX(int cx) {
+		this.cx = cx;
+	}
+	@Override
+	public void setCenterY(int cy) {
+		this.cy = cy;
 	}
 	
 	@Override
