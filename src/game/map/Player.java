@@ -2,13 +2,13 @@ package game.map;
 
 import game.core.Animation;
 import game.core.Box;
-import game.core.Collisionable;
 import game.core.Direction;
-import game.core.Drawable;
 import game.core.InputComponent;
-import game.core.Moveable;
 import game.core.Shape;
 import game.core.Spritesheet;
+import game.map.entity.Abyss;
+import game.map.entity.PlayerExit;
+import game.map.entity.PlayerSpawn;
 
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
@@ -16,8 +16,6 @@ import java.awt.event.KeyListener;
 import java.util.HashMap;
 import java.util.Observable;
 import java.util.Observer;
-
-import state.GameState;
 
 /**
  * La clase Player representa un personaje jugable dentro del mapa.
@@ -29,25 +27,19 @@ public class Player extends MapObject implements Drawable, Moveable, Collisionab
 	static Spritesheet spritesheet;
 	static
 	{
-		try
-		{
-			spritesheet = new Spritesheet();
-			spritesheet.load("spritesheet/player.txt");
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
+		spritesheet = new Spritesheet();
+		spritesheet.load("spritesheet/player.txt");
 	}
 	
 	private Box box;
 	private InputComponent input;
-	private Direction currentdir;
-	private Direction nextdir; //este atributo va a actuar como una suerte de buffer
+	private Direction currentDirection;
+	private Direction nextDirection; //este atributo va a actuar como una suerte de buffer
 	private HashMap<String, Animation> animations;
 	private Animation currentAnimation;
 	private Animation nextAnimation;
-	private boolean falling;
+	private boolean canCollide;
+	private boolean hasTrophy;
 
 	public Player(int x, int y)
 	{
@@ -58,70 +50,77 @@ public class Player extends MapObject implements Drawable, Moveable, Collisionab
 		input.setControl(KeyEvent.VK_RIGHT, "right");
 		input.setControl(KeyEvent.VK_UP, "up");
 		input.setControl(KeyEvent.VK_DOWN, "down");
-		currentdir = null;
-		nextdir = null;
-		animations.put("walkSouth", spritesheet.createAnimation("walkSouth"));
-		animations.put("walkNorth", spritesheet.createAnimation("walkNorth"));
-		animations.put("walkWest", spritesheet.createAnimation("walkWest"));
-		animations.put("walkEast", spritesheet.createAnimation("walkEast"));
-		animations.put("standSouth", spritesheet.createAnimation("standSouth"));
-		animations.put("standNorth", spritesheet.createAnimation("standNorth"));
-		animations.put("standWest", spritesheet.createAnimation("standWest"));
-		animations.put("standEast", spritesheet.createAnimation("standEast"));
-		animations.put("fall", spritesheet.createAnimation("fall"));
-		for (Animation a : animations.values())
-			a.addObserver(this);
+		currentDirection = null;
+		nextDirection = null;
+		for (String s : new String[] {"walkSouth", "walkNorth", "walkEast", "walkWest", "standSouth", "standNorth", "standWest", "standEast", "fall", "win"})
+		{
+			Animation anim = spritesheet.createAnimation(s);
+			animations.put(s, anim);
+			anim.addObserver(this);
+		}
 
 		currentAnimation = animations.get("standSouth");
 		currentAnimation.start();
 		nextAnimation = null;
-		
-		falling = false;
+		canCollide = true;
+		hasTrophy = false;
 	}
 
 	@Override
-	public void move(GameState gs) {
-		Map map = gs.getMap();
+	public void move(Map map) {
 		if (box.getWest() % map.getTileWidth() == 0 && box.getNorth() % map.getTileHeight() == 0)
 		{
 			updateAnimation();
 			updateDirection();
 		}
-		if (currentdir != null && currentdir.isOrthogonal())
+		if (currentDirection != null && currentDirection.isOrthogonal())
 		{
 			Box newbox = new Box(
-				box.getCenterX() + (int)currentdir.xFactor(), box.getCenterY() + (int)currentdir.yFactor(),
+				box.getCenterX() + (int)currentDirection.xFactor(), box.getCenterY() + (int)currentDirection.yFactor(),
 				box.getWidth(), box.getHeight()
 			);
 			if (map.isFloor(newbox.getWest() / map.getTileWidth(), newbox.getNorth() / map.getTileHeight()) &&
 				map.isFloor((newbox.getEast()-1) / map.getTileWidth(), (newbox.getSouth()-1) / map.getTileHeight()))
 			{
-				box.setCenterX(box.getCenterX() + (int)currentdir.xFactor());
-				box.setCenterY(box.getCenterY() + (int)currentdir.yFactor());
+				box.setCenterX(box.getCenterX() + (int)currentDirection.xFactor());
+				box.setCenterY(box.getCenterY() + (int)currentDirection.yFactor());
 			}
 		}
 	}
 
 	@Override
-	public void draw(GameState gs, Graphics2D g2d) {
+	public void draw(Map map, Graphics2D g2d) {
 		if (currentAnimation != null)
 		{
-			Camera cam = gs.getCamera();
-			currentAnimation.draw(g2d, box.getWest() - cam.getWest(), box.getNorth() - cam.getNorth());
+			currentAnimation.draw(g2d, box.getWest(), box.getNorth());
 			currentAnimation.advance();
 		}
 	}
 
 	@Override
-	public void onCollision(GameState gs, Collisionable other) {
-		if (other instanceof EntityAbyss)
+	public void onCollision(Map map, Collisionable other) {
+		if (other instanceof Abyss)
 		{
-			if (!falling)
+			if (canCollide)
 			{
-				falling = true;
+				nextDirection = null;
 				input.disable();
 				nextAnimation = animations.get("fall");
-				nextdir = null;
+				canCollide = false;
+			}
+		}
+		else if (other instanceof PlayerExit)
+		{
+			hasTrophy = true;
+		}
+		else if (other instanceof PlayerSpawn)
+		{
+			if (canCollide && hasTrophy)
+			{
+				nextDirection = null;
+				input.disable();
+				nextAnimation = animations.get("win");
+				canCollide = false;
 			}
 		}
 	}
@@ -139,11 +138,11 @@ public class Player extends MapObject implements Drawable, Moveable, Collisionab
 			nextAnimation = null;
 			currentAnimation.start();
 		}
-		else if (nextdir != currentdir)
+		else if (nextDirection != currentDirection)
 		{
-			if(nextdir == null)
+			if(nextDirection == null)
 			{
-				switch (currentdir)
+				switch (currentDirection)
 				{
 				case EAST:
 					currentAnimation = animations.get("standEast");
@@ -163,7 +162,7 @@ public class Player extends MapObject implements Drawable, Moveable, Collisionab
 			}
 			else
 			{
-				switch (nextdir)
+				switch (nextDirection)
 				{
 				case EAST:
 					currentAnimation = animations.get("walkEast");
@@ -187,8 +186,8 @@ public class Player extends MapObject implements Drawable, Moveable, Collisionab
 	
 	private void updateDirection ()
 	{
-		currentdir = nextdir;
-		nextdir = null;
+		currentDirection = nextDirection;
+		//nextDirection = null;
 	}
 
 	@Override
@@ -196,26 +195,34 @@ public class Player extends MapObject implements Drawable, Moveable, Collisionab
 		if (input.keyPressed(arg0))
 		{
 			String lastinteraction = input.getLastInteraction();
-			switch (lastinteraction)
-			{
-			case "left":
-				nextdir = Direction.WEST;
-				break;
-			case "right":
-				nextdir = Direction.EAST;
-				break;
-			case "up":
-				nextdir = Direction.NORTH;
-				break;
-			case "down":
-				nextdir = Direction.SOUTH;
-				break;
-			}
+			if (lastinteraction.equals("left"))
+				nextDirection = Direction.WEST;
+			else if (lastinteraction.equals("right"))
+				nextDirection = Direction.EAST;
+			else if (lastinteraction.equals("up"))
+				nextDirection = Direction.NORTH;
+			else if (lastinteraction.equals("down"))
+				nextDirection = Direction.SOUTH;
 		}
 	}
 
 	@Override
 	public void keyReleased(KeyEvent arg0) {
+		if (input.keyReleased(arg0))
+		{
+			String lastinteraction = input.getLastInteraction();
+			if (currentDirection == nextDirection)
+			{
+				if (lastinteraction.equals("left"))
+					nextDirection = null;
+				else if (lastinteraction.equals("right"))
+					nextDirection = null;
+				else if (lastinteraction.equals("up"))
+					nextDirection = null;
+				else if (lastinteraction.equals("down"))
+					nextDirection = null;
+			}
+		}
 	}
 
 	@Override
@@ -228,7 +235,5 @@ public class Player extends MapObject implements Drawable, Moveable, Collisionab
 		{
 			currentAnimation = null;
 		}
-		
 	}
-	
 }

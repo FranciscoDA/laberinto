@@ -34,12 +34,12 @@ public class Spritesheet {
 	private BufferedImage sheet;
 	HashMap<Integer, BufferedImage> sprites;
 	HashMap<String, BufferedImage> namedSprites;
-	HashMap<String, AnimationPrototype> animations;
+	HashMap<String, AnimationModel> animations;
 	public Spritesheet ()
 	{
 		sheet = null;
 		sprites = new HashMap<Integer, BufferedImage>();
-		animations = new HashMap<String, AnimationPrototype>();
+		animations = new HashMap<String, AnimationModel>();
 		namedSprites = new HashMap<String, BufferedImage>();
 	}
 	public void load (String fileName)
@@ -98,7 +98,7 @@ public class Spritesheet {
 					float speed = 1.0f;
 					if (attributes.get("speed") != null)
 						speed = Float.parseFloat(attributes.get("speed"));
-					animations.put(attributes.get("name"), new AnimationPrototype (sequence,speed));
+					animations.put(attributes.get("name"), new AnimationModel (sequence,speed));
 				}
 			}
 			br.close();

@@ -1,11 +1,10 @@
 package state;
 
-import game.core.GamePanel;
-import game.map.Camera;
+import game.core.Camera;
 import game.map.Map;
 import game.map.MapLoader;
-import game.map.Player;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.nio.file.Path;
@@ -13,21 +12,25 @@ import java.nio.file.Path;
 import javax.swing.JOptionPane;
 
 
-public class GameState extends state.State {
-	Path mapPath;
-	public GameState(Path path)
+public class GameState implements State {
+	private static double SCREEN_SCALE = 2.0;
+	private GamePanel panel;
+	private Path mapPath;
+	private Camera camera;
+	private Map map;
+
+	public GameState(GamePanel panel, Path path)
 	{
 		this.mapPath = path;
+		this.panel = panel;
 	}
 	
 	@Override
-	public void init(GamePanel gp) {
+	public void init() {
 		camera = new Camera(
-				0,
-				0,
-				gp.getScreenWidth(),
-				gp.getScreenHeight()
-			);
+			0, 0,
+			(int)(panel.getScreenWidth() / SCREEN_SCALE), (int)(panel.getScreenHeight() / SCREEN_SCALE)
+		);
 		try
 		{
 			map = MapLoader.loadMap(map, MapLoader.MapType.FLARE, mapPath);
@@ -37,63 +40,49 @@ public class GameState extends state.State {
 			// si hubo un error al cargar el mapa, informamos que no se pudo encontrar
 			JOptionPane.showMessageDialog(null, e.toString(), "ERROR", JOptionPane.ERROR_MESSAGE);
 		}
-		map.getObjects().startGame(this);
+		map.startGame();
 		if(map.getObjects().getPlayer() != null)
 			camera.lock(map.getObjects().getPlayer().getShape());
 	}
 
 	@Override
-	public void pause(GamePanel gp) {
-		// TODO Auto-generated method stub
-		
+	public void pause() {
 	}
 
 	@Override
-	public void resume(GamePanel gp) {
-		// TODO Auto-generated method stub
-		
+	public void resume() {
 	}
 
 	@Override
-	public void destroy(GamePanel gp) {
-		// TODO Auto-generated method stub
-		
+	public void destroy() {
 	}
 
 	@Override
-	public void logic(GamePanel gp) {
-		camera.move(this);
-		map.getObjects().logic(this);
-	}
-
-	@Override
-	public void paint(GamePanel gp, Graphics2D g2d) {
-		map.draw(this, g2d);
+	public void paint(Graphics2D g2d) {
+		g2d.setColor(new Color (0, 0, 0, 255));
+		g2d.fillRect(0, 0, panel.getScreenWidth(), panel.getScreenHeight());
+		g2d.scale(SCREEN_SCALE, SCREEN_SCALE);
+		map.draw(camera, g2d);
 	}
 
 	@Override
 	public void keyPressed(KeyEvent arg0) {
-		Player player = getMap().getObjects().getPlayer();
-		if (player != null)
-			player.keyPressed(arg0);
+		map.keyPressed(arg0);
 	}
 
 	@Override
 	public void keyReleased(KeyEvent arg0) {
-		Player player = getMap().getObjects().getPlayer();
-		if (player != null)
-			player.keyReleased(arg0);
-	}
-	
-	public Camera getCamera()
-	{
-		return camera;
-	}
-	public Map getMap()
-	{
-		return map;
+		map.keyReleased(arg0);
 	}
 
-	private Camera camera;
-	private Map map;
+	@Override
+	public int getPreferredFPS() {
+		return 60;
+	}
+
+	@Override
+	public void run() {
+		camera.move();
+		map.logic();
+	}
 }

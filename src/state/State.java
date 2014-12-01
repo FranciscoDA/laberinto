@@ -1,7 +1,5 @@
 package state;
 
-import game.core.GamePanel;
-
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 
@@ -27,16 +25,15 @@ import java.awt.event.KeyEvent;
  * @author Francisco Altoe
  *
  */
-public abstract class State {	
-	public abstract void init(GamePanel gp);
-	public abstract void pause(GamePanel gp);
-	public abstract void resume(GamePanel gp);
-	public abstract void destroy(GamePanel gp);
-	
-	public abstract void logic(GamePanel gp);
-	public abstract void paint(GamePanel gp, Graphics2D g2d);
-
+public interface State extends Runnable {
+	public abstract void init();
+	public abstract void pause();
+	public abstract void resume();
+	public abstract void destroy();
 
 	public abstract void keyPressed(KeyEvent arg0);
 	public abstract void keyReleased(KeyEvent arg0);
+	
+	public abstract int getPreferredFPS();
+	public abstract void paint(Graphics2D g2d);
 }

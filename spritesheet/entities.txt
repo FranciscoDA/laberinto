@@ -13,20 +13,10 @@ location=32,0,32,32
 
 [sprite]
 id=2
-name=playerExitEast
+name=playerExit
 location=64,0,32,32
 
 [sprite]
 id=3
-name=playerExitSouth
+name=playerExitUsed
 location=96,0,32,32
-
-[sprite]
-id=4
-name=playerExitWest
-location=128,0,32,32
-
-[sprite]
-id=5
-name=playerExitNorth
-location=160,0,32,32

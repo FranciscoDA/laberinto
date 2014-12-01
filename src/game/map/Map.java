@@ -2,11 +2,11 @@ package game.map;
 
 
 import game.core.Box;
+import game.core.Camera;
 import game.core.Direction;
 
 import java.awt.Graphics2D;
-
-import state.GameState;
+import java.awt.event.KeyEvent;
 
 /**
  * La clase Map contiene la informacion de los cuadrados del mapa
@@ -16,8 +16,8 @@ import state.GameState;
  * @author Francisco Altoe
  *
  */
-public class Map implements game.core.Drawable {
-
+public class Map
+{
 	private int width;
 	private int height;
 	
@@ -45,7 +45,6 @@ public class Map implements game.core.Drawable {
 	}
 
 	public ObjectManager getObjects() { return objects; }
-	//public Tileset getTileSet () { return tileset; }
 	public int getWidth() { return width; }
 	public int getHeight() { return height; }
 	public int getTileWidth() { return tileset.getTileWidth(); }
@@ -86,6 +85,11 @@ public class Map implements game.core.Drawable {
 		boolean old = calculatedFOV[y * getWidth() + x];
 		calculatedFOV[y * getWidth() + x] = true;
 		return old;
+	}
+	
+	public void logic()
+	{
+		objects.logic(this);
 	}
 
 	/**
@@ -158,10 +162,21 @@ public class Map implements game.core.Drawable {
 		}
 	}
 	
-	@Override
-	public void draw(GameState gs, Graphics2D g2d)
+	public void draw(Camera cam, Graphics2D g2d)
 	{
-		Camera cam = gs.getCamera();
+		/*
+		 * Para que los objetos dibujables no necesiten conocer la camara,
+		 * aplicamos la transformacion de traslacion directamente en el g2d
+		 * La ventaja es que se reducen las dependencias de las clases y
+		 * se ahorran lineas de codigo.
+		 */
+		g2d.translate(-cam.getWest(), -cam.getNorth());
+		
+		/*
+		 * Por cada recuadro recalculamos el campo de vision.
+		 * Actualmente el unico objeto que provee vision del
+		 * mapa es el jugador.
+		 */
 		Player player = objects.getPlayer();
 		if (player != null)
 		{
@@ -172,8 +187,6 @@ public class Map implements game.core.Drawable {
 			int yy = yPixelsToTiles(pbox.getCenterY());
 			shadowCast(xx, yy, xx, yy);
 		}
-		if (cam == null)
-			return;
 
 		int miny = Math.max(cam.getNorth() / getTileHeight(), 0);
 		int maxy = Math.min(cam.getSouth() / getTileHeight() + 1, getHeight());
@@ -182,14 +195,25 @@ public class Map implements game.core.Drawable {
 
 		for (int ty = miny; ty < maxy; ty ++)
 		{
-			int desty = ty * getTileHeight() - cam.getNorth();
+			int desty = ty * getTileHeight();
 			for (int tx = minx; tx < maxx; tx ++)
 			{
-				int destx = tx * getTileWidth() - cam.getWest();
+				int destx = tx * getTileWidth();
 				if (isInFOV(tx,ty))
 					tileset.drawTile(g2d, getTile(tx, ty), destx, desty);
 			}
 		}
-		objects.draw(gs, g2d);
+		objects.draw(this, g2d);
+	}
+	
+	public void startGame()
+	{
+		objects.startGame(this);
+	}
+	public void keyPressed(KeyEvent arg0) {
+		objects.keyPressed(arg0);
+	}
+	public void keyReleased(KeyEvent arg0) {
+		objects.keyReleased(arg0);
 	}
 }

@@ -1,5 +1,10 @@
 package game.map;
 
+import game.map.entity.Abyss;
+import game.map.entity.EntityFactory;
+import game.map.entity.PlayerExit;
+import game.map.entity.PlayerSpawn;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.nio.file.Path;
@@ -16,9 +21,15 @@ import java.util.HashMap;
  */
 public abstract class MapLoader {
 	static {
-		EntityFactory.getInstance().registerEntityType("playerSpawn", new EntityPlayerSpawn());
-		EntityFactory.getInstance().registerEntityType("abyss", new EntityAbyss());
-		EntityFactory.getInstance().registerEntityType("playerExit", new EntityPlayerExit());
+		try {
+			EntityFactory.getInstance().registerEntityType(PlayerSpawn.class);
+			EntityFactory.getInstance().registerEntityType(Abyss.class);
+			EntityFactory.getInstance().registerEntityType(PlayerExit.class);
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
 	}
 	public enum MapType
 	{

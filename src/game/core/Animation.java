@@ -7,7 +7,7 @@ import java.util.Observable;
 public class Animation extends Observable {
 	public static final int STATUS_STOPPED = 0;
 	public static final int STATUS_LOOPING = 1;
-	public Animation (AnimationPrototype prototype)
+	public Animation (AnimationModel prototype)
 	{
 		this.prototype = prototype;
 		this.frame = 0.0f;
@@ -44,6 +44,6 @@ public class Animation extends Observable {
 
 	private float frame;
 	private float speed;
-	private AnimationPrototype prototype;
+	private AnimationModel prototype;
 	private int status;
 }

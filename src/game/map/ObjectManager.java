@@ -1,21 +1,19 @@
 package game.map;
 
-import game.core.Collisionable;
-import game.core.Drawable;
-import game.core.Moveable;
 import game.core.Shape;
+import game.map.entity.Entity;
 
 import java.awt.Graphics2D;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.LinkedList;
 import java.util.ListIterator;
-
-import state.GameState;
 
 /**
  * La clase ObjectManager administra la logica y los graficos de los
  * objetos del mapa en conjunto.
  * 
- * @author francisco
+ * @author Francisco Altoe
  *
  */
 public class ObjectManager {
@@ -23,7 +21,8 @@ public class ObjectManager {
 	{
 		addList = new LinkedList<MapObject>();
 		killList = new LinkedList<MapObject>();
-		objects = new LinkedList<MapObject>(); 
+		objects = new LinkedList<MapObject>();
+		player = null;
 	}
 	
 	private void killBatch()
@@ -44,12 +43,12 @@ public class ObjectManager {
 		}
 		addList.clear();
 	}
-	public void logic(GameState gs)
+	public void logic(Map map)
 	{
 		for (MapObject o : objects)
 		{
 			if (o instanceof Moveable)
-				((Moveable) o).move(gs);
+				((Moveable) o).move(map);
 		}
 		
 		ListIterator<MapObject> oit = objects.listIterator();
@@ -70,8 +69,8 @@ public class ObjectManager {
 						{
 							if (oshape.collides(pshape) || pshape.collides(oshape))
 							{
-								((Collisionable) o).onCollision(gs, (Collisionable) p);
-								((Collisionable) p).onCollision(gs, (Collisionable) o);
+								((Collisionable) o).onCollision(map, (Collisionable) p);
+								((Collisionable) p).onCollision(map, (Collisionable) o);
 							}
 						}
 					}
@@ -82,13 +81,13 @@ public class ObjectManager {
 		addBatch();
 	}
 	
-	public void draw(GameState gs, Graphics2D g2d)
+	public void draw(Map map, Graphics2D g2d)
 	{
 		for (MapObject o : objects)
 		{
 			if (o instanceof Drawable)
 			{
-				((Drawable) o).draw(gs, g2d);
+				((Drawable) o).draw(map, g2d);
 			}
 		}
 	}
@@ -103,7 +102,7 @@ public class ObjectManager {
 		killList.add(o);
 	}
 	
-	public void trigger (GameState gs, String name)
+	public void trigger (Map map, String name)
 	{
 		for (MapObject o : objects)
 		{
@@ -112,7 +111,7 @@ public class ObjectManager {
 				Entity e = (Entity) o;
 				if (e.getName() != null && e.getName().equals(name))
 				{
-					e.trigger(gs);
+					e.trigger(map);
 				}
 			}
 		}
@@ -120,15 +119,32 @@ public class ObjectManager {
 		addBatch();
 	}
 	
-	public void startGame(GameState gs)
+	public void startGame(Map map)
 	{
 		addBatch();
 		for (MapObject o : objects)
 		{
 			if (o instanceof Entity)
-				((Entity) o).onGameStart(gs);
+				((Entity) o).onGameStart(map);
 		}
 		addBatch();
+	}
+	
+	public void keyPressed(KeyEvent arg0)
+	{
+		for (MapObject o : objects)
+		{
+			if (o instanceof KeyListener)
+				((KeyListener) o).keyPressed(arg0);
+		}
+	}
+	public void keyReleased(KeyEvent arg0)
+	{
+		for (MapObject o : objects)
+		{
+			if (o instanceof KeyListener)
+				((KeyListener) o).keyReleased(arg0);
+		}
 	}
 	
 	public Player getPlayer()
