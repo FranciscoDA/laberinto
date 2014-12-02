@@ -54,10 +54,10 @@ public class MapMenuState implements State {
 		else if (arg0.getKeyCode() == KeyEvent.VK_UP)
 			selectionIndex --;
 		else if (arg0.getKeyCode() == KeyEvent.VK_ESCAPE)
-			panel.popGameState();
+			panel.popState();
 		else if (arg0.getKeyCode() == KeyEvent.VK_ENTER)
 			if (!mapList.isEmpty())
-				panel.pushGameState(
+				panel.pushState(
 					new GameState(panel,
 						(parentFolder.resolve(mapList.get(selectionIndex).toString()))
 					)

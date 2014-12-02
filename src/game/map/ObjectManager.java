@@ -12,38 +12,38 @@ import java.util.ListIterator;
 /**
  * La clase ObjectManager administra la logica y los graficos de los
  * objetos del mapa en conjunto.
+ * Tambien administra la alta y baja de objetos para evitar errores
+ * de escritura concurrente
  * 
  * @author Francisco Altoe
- *
  */
 public class ObjectManager {
-	public ObjectManager()
+	private Map map;
+	private LinkedList<MapObject> addList;
+	private LinkedList<MapObject> killList;
+	private LinkedList<MapObject> objects;
+	
+	public ObjectManager(Map map)
 	{
-		addList = new LinkedList<MapObject>();
-		killList = new LinkedList<MapObject>();
-		objects = new LinkedList<MapObject>();
-		player = null;
+		this.map = map;
+		this.addList = new LinkedList<MapObject>();
+		this.killList = new LinkedList<MapObject>();
+		this.objects = new LinkedList<MapObject>();
 	}
 	
 	private void killBatch()
 	{
 		for (MapObject k : killList)
-		{
 			objects.remove(k);
-		}
 		killList.clear();
 	}
 	private void addBatch()
 	{
 		for (MapObject a : addList)
-		{
 			objects.add(a);
-			if (a instanceof Player)
-				player = (Player) a;
-		}
 		addList.clear();
 	}
-	public void logic(Map map)
+	public void logic()
 	{
 		for (MapObject o : objects)
 		{
@@ -81,7 +81,7 @@ public class ObjectManager {
 		addBatch();
 	}
 	
-	public void draw(Map map, Graphics2D g2d)
+	public void draw(Graphics2D g2d)
 	{
 		for (MapObject o : objects)
 		{
@@ -102,7 +102,7 @@ public class ObjectManager {
 		killList.add(o);
 	}
 	
-	public void trigger (Map map, String name)
+	public void trigger (String name)
 	{
 		for (MapObject o : objects)
 		{
@@ -111,7 +111,7 @@ public class ObjectManager {
 				Entity e = (Entity) o;
 				if (e.getName() != null && e.getName().equals(name))
 				{
-					e.trigger(map);
+					e.trigger();
 				}
 			}
 		}
@@ -125,7 +125,7 @@ public class ObjectManager {
 		for (MapObject o : objects)
 		{
 			if (o instanceof Entity)
-				((Entity) o).onGameStart(map);
+				((Entity) o).onGameStart();
 		}
 		addBatch();
 	}
@@ -146,14 +146,4 @@ public class ObjectManager {
 				((KeyListener) o).keyReleased(arg0);
 		}
 	}
-	
-	public Player getPlayer()
-	{
-		return player;
-	}
-
-	private Player player;
-	private LinkedList<MapObject> addList;
-	private LinkedList<MapObject> killList;
-	private LinkedList<MapObject> objects;
 }

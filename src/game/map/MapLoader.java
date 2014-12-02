@@ -35,7 +35,7 @@ public abstract class MapLoader {
 	{
 		FLARE/*, TMX*/
 	}
-	public static Map loadMap (Map map, MapType type, Path mapPath) throws Exception
+	public static Map loadMap (MapType type, Path mapPath) throws Exception
 	{
 		if (type == MapType.FLARE)
 		{
@@ -102,10 +102,10 @@ public abstract class MapLoader {
 					if (keyval[0].equals("type"))
 						type = keyval[1];
 				}
-				for (int y = 0; y < map.getHeight(); y++)
+				for (int y = 0; y < height; y++)
 				{
 					String[] tiledata = br.readLine().split(",");
-					for (int x = 0; x < map.getWidth(); x++)
+					for (int x = 0; x < width; x++)
 					{ 
 						Tile t = tileset.getTile(Integer.parseInt(tiledata[x]));
 						if (type.equals("wall"))
@@ -124,7 +124,7 @@ public abstract class MapLoader {
 					String[] split = attribute.split("=");
 					keyval.put(split[0], split[1]);
 				}
-				map.getObjects().add(EntityFactory.getInstance().createEntity(map, keyval));
+				map.addObject(EntityFactory.getInstance().createEntity(map, keyval));
 			}
 		}
 		br.close();

@@ -33,16 +33,16 @@ public class GameState implements State {
 		);
 		try
 		{
-			map = MapLoader.loadMap(map, MapLoader.MapType.FLARE, mapPath);
+			map = MapLoader.loadMap(MapLoader.MapType.FLARE, mapPath);
+			map.setCamera(camera);
+			map.startGame();
 		}
 		catch (Exception e)
 		{
 			// si hubo un error al cargar el mapa, informamos que no se pudo encontrar
 			JOptionPane.showMessageDialog(null, e.toString(), "ERROR", JOptionPane.ERROR_MESSAGE);
 		}
-		map.startGame();
-		if(map.getObjects().getPlayer() != null)
-			camera.lock(map.getObjects().getPlayer().getShape());
+		
 	}
 
 	@Override
@@ -82,7 +82,10 @@ public class GameState implements State {
 
 	@Override
 	public void run() {
-		camera.move();
 		map.logic();
+		if (map.getState() == Map.State.EXIT)
+		{
+			panel.popState();
+		}
 	}
 }

@@ -45,11 +45,11 @@ public class MainMenuState implements State {
 	public void keyPressed(KeyEvent arg0) {
 		if (arg0.getKeyCode() == KeyEvent.VK_1)
 		{
-			panel.pushGameState(new MapMenuState(panel, Paths.get("map")));
+			panel.pushState(new MapMenuState(panel, Paths.get("map")));
 		}
 		else if(arg0.getKeyCode() == KeyEvent.VK_3)
 		{
-			panel.popGameState();
+			panel.popState();
 		}
 	}
 

@@ -12,11 +12,8 @@ import java.util.HashMap;
 public class Abyss extends Entity implements Collisionable, Drawable {
 	private Box box;
 
-	public Abyss()
-	{	
-	}
-
 	public Abyss(Map map, HashMap<String, String> keyval) {
+		super(map);
 		this.name = keyval.get("name");
 		this.triggers = keyval.get("triggers");
 		String[] location = keyval.get("location").split(",");
@@ -27,12 +24,10 @@ public class Abyss extends Entity implements Collisionable, Drawable {
 	}
 
 	@Override
-	public void onGameStart(Map map) {
-	}
+	public void onGameStart() {	}
 
 	@Override
-	public void trigger(Map map) {
-	}
+	public void trigger() {	}
 
 	@Override
 	public void onCollision(Map map, Collisionable other) {
@@ -42,7 +37,7 @@ public class Abyss extends Entity implements Collisionable, Drawable {
 	public void draw(Map map, Graphics2D g2d) {
 		for (int x = 0; x < box.getWidth(); x += map.getTileWidth())
 			for (int y = 0; y < box.getHeight(); y += map.getTileHeight())
-				if (map.isInFOV(map.xPixelsToTiles(box.getWest()+x), map.yPixelsToTiles(box.getNorth()+y)))
+				if (map.isInFOV((box.getWest()+x) / map.getTileWidth(), (box.getNorth()+y) / map.getTileHeight()))
 					g2d.drawImage(spritesheet.getSprite("abyss"), box.getWest()+x, box.getNorth()+y, null);
 	}
 

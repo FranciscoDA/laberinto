@@ -31,7 +31,7 @@ public class GamePanel extends JPanel implements KeyListener, Runnable {
 		stateStack = new Stack<State>();
 		setDoubleBuffered(true);
 	}
-	public void popGameState ()
+	public void popState ()
 	{
 		if (!stateStack.isEmpty())
 		{
@@ -47,7 +47,7 @@ public class GamePanel extends JPanel implements KeyListener, Runnable {
 			}
 		}
 	}
-	public void pushGameState (State gs)
+	public void pushState (State gs)
 	{	
 		if(!stateStack.isEmpty())
 		{
@@ -128,7 +128,7 @@ public class GamePanel extends JPanel implements KeyListener, Runnable {
 		frame.setResizable(false);
 		frame.setVisible(true);
 		state.MainMenuState menu = new state.MainMenuState(gamepanel);
-		gamepanel.pushGameState(menu);
+		gamepanel.pushState(menu);
 		gamepanel.run();
 	}
 }

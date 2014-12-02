@@ -11,7 +11,7 @@ import java.awt.image.BufferedImage;
  * secuencia de imagenes y la velocidad por defecto
  * (ademas de la informacion pertinente a cada objeto)
  * 
- * Esto tambien se conoce como Flyweight Pattern
+ * Flyweight Pattern:
  * http://en.wikipedia.org/wiki/Flyweight_pattern
  * @author Francisco Altoe
  *

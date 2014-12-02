@@ -41,8 +41,9 @@ public class Player extends MapObject implements Drawable, Moveable, Collisionab
 	private boolean canCollide;
 	private boolean hasTrophy;
 
-	public Player(int x, int y)
+	public Player(Map map, int x, int y)
 	{
+		super(map);
 		animations = new HashMap<String, Animation>();
 		box = new Box(x, y, 32, 32);
 		input = new InputComponent();
@@ -64,6 +65,10 @@ public class Player extends MapObject implements Drawable, Moveable, Collisionab
 		nextAnimation = null;
 		canCollide = true;
 		hasTrophy = false;
+		
+		this.addObserver(map);
+		setChanged();
+		notifyObservers("created");
 	}
 
 	@Override
@@ -107,6 +112,8 @@ public class Player extends MapObject implements Drawable, Moveable, Collisionab
 				input.disable();
 				nextAnimation = animations.get("fall");
 				canCollide = false;
+				setChanged();
+				notifyObservers("died");
 			}
 		}
 		else if (other instanceof PlayerExit)
@@ -121,6 +128,8 @@ public class Player extends MapObject implements Drawable, Moveable, Collisionab
 				input.disable();
 				nextAnimation = animations.get("win");
 				canCollide = false;
+				setChanged();
+				notifyObservers("won");
 			}
 		}
 	}
@@ -187,7 +196,6 @@ public class Player extends MapObject implements Drawable, Moveable, Collisionab
 	private void updateDirection ()
 	{
 		currentDirection = nextDirection;
-		//nextDirection = null;
 	}
 
 	@Override

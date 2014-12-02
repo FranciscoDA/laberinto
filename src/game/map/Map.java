@@ -1,23 +1,35 @@
 package game.map;
 
 
-import game.core.Box;
 import game.core.Camera;
 import game.core.Direction;
 
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
+import java.awt.geom.Rectangle2D;
+import java.util.LinkedList;
+import java.util.Observable;
+import java.util.Observer;
 
 /**
  * La clase Map contiene la informacion de los cuadrados del mapa
  * cargado de un archivo y su distribucion.
- * Tambien contiene los objetos y el campo de vision.
+ * Tambien contiene los objetos y calcula el campo de vision.
  * 
  * @author Francisco Altoe
  *
  */
-public class Map
+public class Map implements Observer
 {
+	public enum State {
+		NONE,
+		PLAYING,
+		GAME_OVER,
+		GAME_WIN,
+		EXIT
+	}
 	private int width;
 	private int height;
 	
@@ -26,70 +38,73 @@ public class Map
 	private boolean[] calculatedFOV;
 	private Tile[] floorTiles;
 	private Tile[] wallTiles;
+	private LinkedList<Collisionable> illuminators;
+	private Camera cam;
+	private State state;
 
 	Map (int width, int height, Tileset tileset)
 	{
 		this.width = width;
 		this.height = height;
-		floorTiles = new Tile[width*height];
-		wallTiles = new Tile[width*height];
-		calculatedFOV = new boolean[width*height];
+		this.floorTiles = new Tile[width*height];
+		this.wallTiles = new Tile[width*height];
+		this.calculatedFOV = new boolean[width*height];
 		for (int i = 0; i < width*height; i++)
 		{
-			floorTiles[i] = null;
-			wallTiles[i] = null;
-			calculatedFOV[i] = false;
+			this.floorTiles[i] = null;
+			this.wallTiles[i] = null;
+			this.calculatedFOV[i] = false;
 		}
-		objects = new ObjectManager();
+		this.objects = new ObjectManager(this);
 		this.tileset = tileset;
+		this.illuminators = new LinkedList<Collisionable>();
+		this.state = State.NONE;
 	}
 
-	public ObjectManager getObjects() { return objects; }
-	public int getWidth() { return width; }
-	public int getHeight() { return height; }
+	public void addObject (MapObject o) { objects.add(o); }
 	public int getTileWidth() { return tileset.getTileWidth(); }
 	public int getTileHeight() { return tileset.getTileHeight(); }
-	public int xPixelsToTiles(int pixels) { return pixels / getTileWidth(); }
-	public int yPixelsToTiles(int pixels) { return pixels / getTileHeight(); }
-	public boolean inBounds (int x, int y) { return x>=0 && x<getWidth() && y>=0 && y<getHeight(); }
+	public boolean inBounds (int x, int y) { return x>=0 && x<width && y>=0 && y<height; }
 	
 	public Tile getTile(int x, int y)
 	{
-		int idx = y * getWidth() + x;
+		int idx = y * width + x;
 		if (wallTiles[idx] != null)
 			return wallTiles[idx];
 		return floorTiles[idx];
 	}
 	public boolean isWall(int x, int y)
 	{
-		return wallTiles[y * getWidth() + x] != null;
+		return wallTiles[y * width + x] != null;
 	}
 	public boolean isFloor(int x, int y)
 	{
-		return (wallTiles[y * getWidth() + x] == null && floorTiles[y*getWidth()+x] != null);
+		return (wallTiles[y * width + x] == null && floorTiles[y*width+x] != null);
 	}
 	public void setWall (int x, int y, Tile t)
 	{
-		wallTiles[y * getWidth() + x] = t;
+		wallTiles[y * width + x] = t;
 	}
 	public void setFloor (int x, int y, Tile t)
 	{
-		floorTiles[y * getWidth() + x] = t;
+		floorTiles[y * width + x] = t;
 	}
 	public boolean isInFOV(int x, int y)
 	{
-		return calculatedFOV[y * getWidth() + x];
+		return calculatedFOV[y * width + x];
 	}
-	public boolean addToFOV(int x, int y)
+	public void addToFOV(int x, int y)
 	{
-		boolean old = calculatedFOV[y * getWidth() + x];
-		calculatedFOV[y * getWidth() + x] = true;
-		return old;
+		calculatedFOV[y * width + x] = true;
+	}
+	public void setCamera (Camera cam)
+	{
+		this.cam = cam;
 	}
 	
 	public void logic()
 	{
-		objects.logic(this);
+		objects.logic();
 	}
 
 	/**
@@ -115,10 +130,10 @@ public class Map
 		*/
 		for (int t = 0; t < distance; t++)
 		{
-			int x = xPixelsToTiles((int) (startx + t * dx/distance));
-			int y = yPixelsToTiles((int) (starty + t * dy/distance));
-			if (x != xPixelsToTiles(startx) || y != yPixelsToTiles(starty))
-				if (x != xPixelsToTiles(destx) || y != yPixelsToTiles(desty))
+			int x = ((int) (startx + t * dx/distance)) / getTileWidth();
+			int y = ((int) (starty + t * dy/distance)) / getTileHeight();
+			if (x != startx / getTileWidth() || y != starty / getTileHeight())
+				if (x != destx / getTileWidth() || y != desty / getTileHeight())
 					if (isWall(x, y))
 						return false;
 		}
@@ -165,33 +180,42 @@ public class Map
 	public void draw(Camera cam, Graphics2D g2d)
 	{
 		/*
-		 * Para que los objetos dibujables no necesiten conocer la camara,
-		 * aplicamos la transformacion de traslacion directamente en el g2d
-		 * La ventaja es que se reducen las dependencias de las clases y
-		 * se ahorran lineas de codigo.
+		 * Guardamos una copia del Graphics2D antes
+		 * de aplicar la transformacion
 		 */
-		g2d.translate(-cam.getWest(), -cam.getNorth());
+
+		Graphics2D pretransform = (Graphics2D)g2d.create();
+		/*
+		 * Para que los objetos dibujables no necesiten conocer la camara,
+		 * aplicamos la transformacion directamente en el g2d
+		 * La ventaja es que se reducen las dependencias de las clases (y
+		 * se ahorran lineas de codigo)
+		 */
+		g2d = cam.transform(g2d);
 		
 		/*
 		 * Por cada recuadro recalculamos el campo de vision.
 		 * Actualmente el unico objeto que provee vision del
-		 * mapa es el jugador.
+		 * mapa es el jugador, pero hay soporte para otros
+		 * objetos que posiblemente hagan lo mismo.
 		 */
-		Player player = objects.getPlayer();
-		if (player != null)
+		if (illuminators.size() > 0)
 		{
 			for (int i = 0; i < calculatedFOV.length; i++)
 				calculatedFOV[i] = false;
-			Box pbox = (Box) objects.getPlayer().getShape();
-			int xx = xPixelsToTiles(pbox.getCenterX());
-			int yy = yPixelsToTiles(pbox.getCenterY());
-			shadowCast(xx, yy, xx, yy);
+
+			for (Collisionable c : illuminators)
+			{
+				int xx = c.getShape().getCenterX()  / getTileWidth();
+				int yy = c.getShape().getCenterY() / getTileHeight();
+				shadowCast(xx, yy, xx, yy);
+			}
 		}
 
 		int miny = Math.max(cam.getNorth() / getTileHeight(), 0);
-		int maxy = Math.min(cam.getSouth() / getTileHeight() + 1, getHeight());
+		int maxy = Math.min(cam.getSouth() / getTileHeight() + 1, height);
 		int minx = Math.max(cam.getWest() / getTileWidth(), 0);
-		int maxx = Math.min(cam.getEast() / getTileWidth() + 1, getWidth());
+		int maxx = Math.min(cam.getEast() / getTileWidth() + 1, width);
 
 		for (int ty = miny; ty < maxy; ty ++)
 		{
@@ -203,17 +227,90 @@ public class Map
 					tileset.drawTile(g2d, getTile(tx, ty), destx, desty);
 			}
 		}
-		objects.draw(this, g2d);
+		objects.draw(g2d);
+		
+		if (state == State.GAME_OVER)
+		{
+			pretransform.setColor(new Color(0,0,0));
+			pretransform.fillRect(0,0, cam.getEast()-cam.getWest(), 30);
+		
+			pretransform.setColor(new Color(255,255,255,255));
+			pretransform.setFont(new Font("SansSerif", 0, 15));
+			
+			String msg = "¡Perdiste!";
+			Rectangle2D rect = pretransform.getFontMetrics().getStringBounds(msg, pretransform);
+			pretransform.drawString(
+				msg, (cam.getWidth() - (int)(rect.getMaxX() - rect.getMinX())) / 2, 15
+			);
+			
+			pretransform.setFont(new Font("SansSerif", 0, 10));
+			msg = "Enter para volver...";
+			rect = pretransform.getFontMetrics().getStringBounds(msg, pretransform);
+			pretransform.drawString(
+				msg, (cam.getWidth() - (int)(rect.getMaxX() - rect.getMinX())) / 2, 25
+			);
+		}
+		else if (state == State.GAME_WIN)
+		{
+			pretransform.setColor(new Color(0,0,0));
+			pretransform.fillRect(0,0, cam.getEast()-cam.getWest(), 30);
+		
+			pretransform.setColor(new Color(255,255,255,255));
+			pretransform.setFont(new Font("SansSerif", 0, 15));
+			
+			String msg = "¡Ganaste!";
+			Rectangle2D rect = pretransform.getFontMetrics().getStringBounds(msg, pretransform);
+			pretransform.drawString(
+				msg, (cam.getWidth() - (int)(rect.getMaxX() - rect.getMinX())) / 2, 15
+			);
+			
+			pretransform.setFont(new Font("SansSerif", 0, 10));
+			msg = "Enter para volver...";
+			rect = pretransform.getFontMetrics().getStringBounds(msg, pretransform);
+			pretransform.drawString(
+				msg,(cam.getWidth() - (int)(rect.getMaxX() - rect.getMinX())) / 2, 25
+			);
+		}
+	}
+	
+	public State getState()
+	{
+		return state;
 	}
 	
 	public void startGame()
 	{
 		objects.startGame(this);
+		state = State.PLAYING;
 	}
 	public void keyPressed(KeyEvent arg0) {
 		objects.keyPressed(arg0);
+		if (state == State.GAME_OVER || state == State.GAME_WIN)
+			if (arg0.getKeyCode() == KeyEvent.VK_ENTER)
+				state = State.EXIT;
 	}
 	public void keyReleased(KeyEvent arg0) {
 		objects.keyReleased(arg0);
+	}
+
+	@Override
+	public void update(Observable arg0, Object arg1) {
+		if (arg0 instanceof Player)
+		{
+			Player pl = (Player) arg0;
+			if (arg1.equals("created"))
+			{
+				cam.lock(pl.getShape());
+				illuminators.add(pl);
+			}
+			else if (arg1.equals("died"))
+			{
+				state = State.GAME_OVER;
+			}
+			else if (arg1.equals("won"))
+			{
+				state = State.GAME_WIN;
+			}
+		}
 	}
 }

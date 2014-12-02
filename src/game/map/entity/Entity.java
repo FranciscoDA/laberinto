@@ -20,11 +20,16 @@ public abstract class Entity extends MapObject{
 		spritesheet.load("spritesheet/entities.txt");
 	}
 	
+	Entity (Map map)
+	{
+		super(map);
+	}
+	
 	protected String name;
 	protected String triggers;
 
-	public abstract void onGameStart(Map map);
-	public abstract void trigger(Map map);
+	public abstract void onGameStart();
+	public abstract void trigger();
 	
 	public String getName()
 	{
@@ -56,10 +61,10 @@ public abstract class Entity extends MapObject{
 		y = y * th;
 		w = w * tw;
 		h = h * th;
-		int leftTile = map.xPixelsToTiles((int) x);
-		int rightTile = map.xPixelsToTiles((int) (x+w));
-		int topTile = map.yPixelsToTiles((int) y);
-		int bottomTile = map.yPixelsToTiles((int) (y+h));
+		int leftTile = ((int) x) / map.getTileWidth();
+		int rightTile = ((int) (x+w)) / map.getTileWidth();
+		int topTile = ((int) y) / map.getTileHeight();
+		int bottomTile = ((int) (y+h)) / map.getTileHeight();
 		return new Box (
 			(leftTile+rightTile+1)*tw/2 , (topTile+bottomTile+1) * tw/2,
 			(rightTile-leftTile+1) * tw, (bottomTile-topTile+1) * th

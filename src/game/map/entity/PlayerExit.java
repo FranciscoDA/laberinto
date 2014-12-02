@@ -13,11 +13,9 @@ import java.util.HashMap;
 public class PlayerExit extends Entity implements Collisionable, Drawable {
 	private Box box;
 	boolean used;
-	public PlayerExit()
-	{
-	}
 
 	public PlayerExit (Map map, HashMap<String, String> keyval) {
+		super(map);
 		this.name = keyval.get("name");
 		this.triggers = keyval.get("triggers");
 		String[] location = keyval.get("location").split(",");
@@ -30,7 +28,7 @@ public class PlayerExit extends Entity implements Collisionable, Drawable {
 
 	@Override
 	public void draw(Map map, Graphics2D g2d) {
-		if (map.isInFOV(map.xPixelsToTiles(box.getCenterX()),map.yPixelsToTiles(box.getCenterY())))
+		if (map.isInFOV(box.getCenterX() / map.getTileWidth(),box.getCenterY() / map.getTileHeight()))
 			if(!used)
 				g2d.drawImage(spritesheet.getSprite("playerExit"), box.getWest(), box.getNorth(), null);
 			else
@@ -49,15 +47,9 @@ public class PlayerExit extends Entity implements Collisionable, Drawable {
 	}
 
 	@Override
-	public void onGameStart(Map map) {
-		// TODO Auto-generated method stub
-		
-	}
+	public void onGameStart() { }
 
 	@Override
-	public void trigger(Map map) {
-		// TODO Auto-generated method stub
-		
-	}
+	public void trigger() { }
 
 }

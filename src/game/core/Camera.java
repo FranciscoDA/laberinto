@@ -1,5 +1,7 @@
 package game.core;
 
+import java.awt.Graphics2D;
+
 
 /**
  * La clase Camera representa lo que el jugador deberia ver dentro del juego,
@@ -12,14 +14,10 @@ package game.core;
 public class Camera {
 	private Box box;
 	private Shape parent;
-	private float xv;
-	private float yv;
 	
 	public Camera (int x, int y, int w, int h)
 	{
 		box = new Box(x,y,w,h);
-		setHorizontalVelocity(0.0f);
-		setVerticalVelocity(0.0f);
 		parent = null;
 	}
 
@@ -30,11 +28,6 @@ public class Camera {
 	public void unlock()
 	{
 		parent = null;
-	}
-	public void move ()
-	{
-		box.setCenterX((int) (box.getCenterX() + getHorizontalVelocity()));
-		box.setCenterY((int) (box.getCenterY() + getVerticalVelocity()));
 	}
 	
 	public int getCenterX()
@@ -80,17 +73,18 @@ public class Camera {
 		else
 			return box.getSouth();
 	}
+	public int getWidth()
+	{
+		return getEast() - getWest();
+	}
+	public int getHeight()
+	{
+		return getSouth() - getNorth();
+	}
 
-	public void setHorizontalVelocity(float xv) {
-		this.xv = xv;
-	}
-	public void setVerticalVelocity(float yv) {
-		this.yv = yv;
-	}
-	public float getHorizontalVelocity() {
-		return xv;
-	}
-	public float getVerticalVelocity() {
-		return yv;
+	public Graphics2D transform (Graphics2D g2d)
+	{
+		g2d.translate(-this.getWest(), -this.getNorth());
+		return g2d;
 	}
 }

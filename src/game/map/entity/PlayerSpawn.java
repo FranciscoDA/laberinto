@@ -12,11 +12,8 @@ import java.util.HashMap;
 
 public class PlayerSpawn extends Entity implements Drawable, Collisionable {
 	private Box box;
-	public PlayerSpawn()
-	{
-		
-	}
 	public PlayerSpawn(Map map, HashMap<String, String> keyval) {
+		super(map);
 		this.name = keyval.get("name");
 		this.triggers = keyval.get("triggers");
 		String[] location = keyval.get("location").split(",");
@@ -27,24 +24,17 @@ public class PlayerSpawn extends Entity implements Drawable, Collisionable {
 	}
 
 	@Override
-	public void onGameStart(Map map) {
-		map.getObjects().add(
-			new Player(
-				box.getCenterX(),
-				box.getCenterY()
-			)
-		);
-		
+	public void onGameStart() {
+		map.addObject(new Player(map, box.getCenterX(), box.getCenterY()));
 	}
 
 	@Override
-	public void trigger (Map map) {
-	}
+	public void trigger () { }
 	
 	@Override
 	public void draw(Map map, Graphics2D g2d)
 	{
-		if (map.isInFOV(map.xPixelsToTiles(box.getCenterX()), map.yPixelsToTiles(box.getCenterY())))
+		if (map.isInFOV(box.getCenterX() / map.getTileWidth(), box.getCenterY() / map.getTileHeight()))
 			g2d.drawImage(spritesheet.getSprite("playerSpawn"), box.getWest(), box.getNorth(), null);
 	}
 	@Override
