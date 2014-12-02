@@ -5,22 +5,23 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.io.File;
-import java.nio.file.Path;
 import java.util.LinkedList;
 
 public class MapMenuState implements State {
 	private GamePanel panel;
 	private LinkedList<String> mapList;
-	private Path parentFolder;
+	private String parentFolder;
 	private int selectionIndex;
 
-	public MapMenuState(GamePanel panel, Path parent)
+	public MapMenuState(GamePanel panel, String parent)
 	{
+		if (!parent.endsWith("/"))
+			parent = parent + "/";
 		this.parentFolder = parent;
 		this.panel = panel;
 		this.mapList = new LinkedList<String>();
 		this.selectionIndex = 0;
-		for (File map : parent.toFile().listFiles())
+		for (File map : new File(parent).listFiles())
 		{
 			if (map.getName().endsWith(".txt"))
 				mapList.add(map.getName());
@@ -58,9 +59,7 @@ public class MapMenuState implements State {
 		else if (arg0.getKeyCode() == KeyEvent.VK_ENTER)
 			if (!mapList.isEmpty())
 				panel.pushState(
-					new GameState(panel,
-						(parentFolder.resolve(mapList.get(selectionIndex).toString()))
-					)
+					new GameState(panel, parentFolder + mapList.get(selectionIndex))
 				);
 		
 		if (selectionIndex >= mapList.size())

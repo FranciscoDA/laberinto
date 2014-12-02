@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
-import java.nio.file.Paths;
 
 public class MainMenuState implements State {
 	private GamePanel panel;
@@ -45,7 +44,7 @@ public class MainMenuState implements State {
 	public void keyPressed(KeyEvent arg0) {
 		if (arg0.getKeyCode() == KeyEvent.VK_1)
 		{
-			panel.pushState(new MapMenuState(panel, Paths.get("map")));
+			panel.pushState(new MapMenuState(panel, "map"));
 		}
 		else if(arg0.getKeyCode() == KeyEvent.VK_3)
 		{

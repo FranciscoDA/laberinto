@@ -7,7 +7,6 @@ import game.map.entity.PlayerSpawn;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 
@@ -35,7 +34,7 @@ public abstract class MapLoader {
 	{
 		FLARE/*, TMX*/
 	}
-	public static Map loadMap (MapType type, Path mapPath) throws Exception
+	public static Map loadMap (MapType type, String mapPath) throws Exception
 	{
 		if (type == MapType.FLARE)
 		{
@@ -51,14 +50,15 @@ public abstract class MapLoader {
 	 * @param mapPath Nombre del archivo a cargar
 	 * @throws Exception 
 	 */
-	private static Map loadFlareMap (Path mapPath) throws Exception
+	private static Map loadFlareMap (String mapPath) throws Exception
 	{
+		String parent = mapPath.substring(0, mapPath.lastIndexOf('/') + 1);
 		Map map = null;
 		Tileset tileset = null;
 		int width = 0;
 		int height = 0;
 		//iremos leyendo el archivo de a tags encerrados entre corchetes
-		BufferedReader br = new BufferedReader(new FileReader(mapPath.toFile()));
+		BufferedReader br = new BufferedReader(new FileReader(mapPath));
 		for (String line = br.readLine(); line != null; line = br.readLine())
 		{
 			// del tag header solo nos interesa el alto y ancho del mapa
@@ -84,10 +84,11 @@ public abstract class MapLoader {
 				for (String attribute = br.readLine(); !attribute.isEmpty(); attribute = br.readLine())
 				{
 					String[] opts = attribute.split(",");
-					path = mapPath.getParent().resolve(Paths.get(opts[0].split("=")[1])).toString();
+					path = parent + (Paths.get(opts[0].split("=")[1]));
 					tw = Integer.parseInt(opts[1]);
 					th = Integer.parseInt(opts[2]);
 				}
+				System.out.println(path);
 				tileset = new Tileset (path, tw, th);
 				if (map == null)
 					map = new Map (width, height, tileset);

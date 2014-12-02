@@ -7,7 +7,6 @@ import game.map.MapLoader;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
-import java.nio.file.Path;
 
 import javax.swing.JOptionPane;
 
@@ -15,11 +14,11 @@ import javax.swing.JOptionPane;
 public class GameState implements State {
 	private static double SCREEN_SCALE = 2.0;
 	private GamePanel panel;
-	private Path mapPath;
+	private String mapPath;
 	private Camera camera;
 	private Map map;
 
-	public GameState(GamePanel panel, Path path)
+	public GameState(GamePanel panel, String path)
 	{
 		this.mapPath = path;
 		this.panel = panel;
