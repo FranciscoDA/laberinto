@@ -300,9 +300,9 @@
   </data>
  </layer>
  <objectgroup name="x" width="12" height="12">
-  <object type="abyss" x="164" y="36" width="22" height="56"/>
-  <object type="abyss" x="293" y="200" width="21" height="50"/>
-  <object type="playerSpawn" x="163" y="163" width="26" height="26"/>
-  <object type="playerExit" x="35" y="227" width="26" height="26"/>
+  <object type="Abyss" x="164" y="36" width="22" height="56"/>
+  <object type="Abyss" x="293" y="200" width="21" height="50"/>
+  <object type="PlayerSpawn" x="163" y="163" width="26" height="26"/>
+  <object type="PlayerExit" x="35" y="227" width="26" height="26"/>
  </objectgroup>
 </map>
